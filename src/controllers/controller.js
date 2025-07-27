@@ -1,3 +1,4 @@
+
 const pool = require("../database/pool");
 //ROTA GET
 const exibirHorasComplementares = async function (req, res) 
@@ -103,9 +104,31 @@ const deletarHorasComplementares = async function (req, res) {
         return res.status(500).json({ erro: "Erro ao deletar horas complementares." });
     }
 }
+    async function aprovarHora(req, res) {
+  const { id } = req.params;
+
+  try {
+    const resultado = await pool.query(
+      "UPDATE HorasComplementares SET status = 'aprovado' WHERE id = $1 RETURNING *",
+      [id]
+    );
+
+    if (resultado.rowCount === 0) {
+      return res.status(404).json({ erro: "Hora não encontrada" });
+    }
+
+    return res.json({
+      mensagem: "Hora aprovada com sucesso!",
+      hora: resultado.rows[0],
+    });
+  } catch (error) {
+    return res.status(500).json({ erro: "Erro interno no servidor" });
+  }
+}
 module.exports = {
     exibirHorasComplementares,
     cadastrarHorasComplementares,
     atualizarHorasComplementares,
-    deletarHorasComplementares
+    deletarHorasComplementares,
+    aprovarHora
 };
